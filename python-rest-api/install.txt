@@ -1,0 +1,12 @@
+
+
+virtualenv -p python3.4 env
+source env/bin/activate
+
+#install steps for app.py (REST example 1)
+pip install flask
+pip install flask-restful
+python app.py
+
+#acessar url
+http://localhost:5000/users
