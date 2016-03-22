@@ -1,12 +1,17 @@
 
-
+#install virtualenv
 virtualenv -p python3.4 env
 source env/bin/activate
 
-#install steps for app.py (REST example 1)
+#module flask for both examples
 pip install flask
+
+#dependencias p/ app.py (REST example 1)
 pip install flask-restful
 python app.py
 
-#acessar url
+# url exemplo 1
 http://localhost:5000/users
+
+#install steps for app.py (REST example 2)
+pip install flask-httpauth
