@@ -9,16 +9,25 @@ $(document).ready(function() {
 });
 
 
-angular.module('raspboardpyApp', [])
+angular.module('raspboardpyApp', []).config(function($interpolateProvider){
+    $interpolateProvider.startSymbol('{[{').endSymbol('}]}');
+})
 .controller('dashboardController', ['$scope','$http','$interval', function($scope,$http,$interval) {
   
+
+    $http.get('/api/sensor/tipos').
+    success(function(data) {
+        $scope.tipos = data;
+    });
+   
+/*
     $interval(function(){
       $http.get('http://localhost:8080/instances').
       success(function(data) {
           $scope.instances = data;
       });
    
-    },1000);
+    },1000);*/
 
     $scope.addSensor = function(){
       $http.get('http://localhost:8080/instances/new').
