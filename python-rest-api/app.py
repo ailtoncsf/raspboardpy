@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import sqlite3
+import random
 
 app = Flask(__name__)
 
@@ -24,31 +25,22 @@ def index(chartID = 'chart_ID', chart_type = 'bar', chart_height = 350):
 def get_list_sensors():
 	return sensor_list
 
-@app.route('/sr04', methods=('GET', 'POST'))
-def addsensor():
+@app.route('/sr00', methods=('GET', 'POST'))
+def addsensor00():
 	tipo_sensor = request.args.get('tipo_sensor')
 	echo = request.args.get('echo')
 	trigger = request.args.get('trigger')
 
-    chart = {"renderTo": chartID, "type": chart_type, "height": chart_height,}
-    series = [{"name": 'Label1', "data": [1,2,3]}, {"name": 'Label2', "data": [4, 5, 6]}]
-    title = {"text": 'SR-04'}
-    xAxis = {"categories": ['xAxis Data1', 'xAxis Data2', 'xAxis Data3']}
-    yAxis = {"title": {"text": 'yAxis Label'}}
+	chart = {"renderTo": chartID, "type": chart_type, "height": chart_height,}
+	series = [{"name": 'Label1', "data": [1,2,3]}, {"name": 'Label2', "data": [4, 5, 6]}]
+	title = {"text": 'SR-04'}
+	xAxis = {"categories": ['xAxis Data1', 'xAxis Data2', 'xAxis Data3']}
+	yAxis = {"title": {"text": 'yAxis Label'}}
 
     #sr04 = new sr04()
 	return tipo_sensor + ' '+ trigger
 
-@app.route('/sr04', methods=('GET', 'POST'))
-def addsensor():
-	tipo_sensor = request.args.get('tipo_sensor')
-	echo = request.args.get('echo')
-	trigger = request.args.get('trigger')
-
-    #sr04 = new sr04()
-	return tipo_sensor + ' '+ trigger
-
-@app.route('/sr04', methods=('GET', 'POST'))
+@app.route('/sr0', methods=('GET', 'POST'))
 def addsensor():
 	tipo_sensor = request.args.get('tipo_sensor')
 	echo = request.args.get('echo')
@@ -56,11 +48,30 @@ def addsensor():
 
     #sr04 = new sr04()
 	return tipo_sensor + ' '+ trigger
+
+@app.route('/sr04', methods=('GET', 'POST'))
+def add_sr04():
+	id_tipo_sensor = request.args.get('id_tipo_sensor')
+	echo = request.args.get('echo')
+	trigger = request.args.get('trigger')
+
+	cont = 0
+	while (cont < 10):
+		distancia = get_distance()
+		gravar_dados_sensor((id_tipo_sensor, distancia, 'cm', 'Distancia', 'datetime("now")'))
+		cont = cont + 1
+
+	dados = display_data(None)
+	return jsonify(dados)
+
+def get_distance():
+	random.uniform(1.5, 1.9)
+
 
 @app.route('/create/database')
 def create_database():
 	execute_createDatabase()
-	return 'Tabela criada com sucesso.'
+	return 'Tabelas criadas com sucesso.'
 
 # store the temperature in the database
 def gravar_dados_sensor(values=()):
@@ -80,7 +91,7 @@ def gravar_dados(tipo_sensor, valor, unidade, variavel, data):
 
 	conn=sqlite3.connect(dbname)
 	curs=conn.cursor()
-	curs.execute('''INSERT INTO log (tipo_sensor, valor, unidade, variavel, data)
+	curs.execute('''INSERT INTO log (id_tipo_sensor, valor, unidade, variavel, data)
 	values (%s, %s, %s, %s, %s)''',
 	(tipo_sensor, valor, unidade, variavel, data))         		  
 	# commit the changes
@@ -123,22 +134,66 @@ def execute_createDatabase():
 	""")
 	# criando a tabela (schema)
 	cursor.execute("""
-	CREATE TIPO_SENSOR log (
+	CREATE TIPO_SENSOR(
 	        id 			INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	        tipo_sensor VARCHAR(20)
 	);
 	""")
 	# criando a tabela (schema)
 	cursor.execute("""
-	CREATE SENSOR log (
+	CREATE SENSOR (
 	        id 			INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	        tipo_sensor VARCHAR(20)
 	);
 	""")	
-
-
 	# desconectando...
 	conn.close()
+
+class sr04(object):
+	"""docstring for sr04"""
+	def __init__(self, arg):
+		super(sr04, self).__init__()
+		self.TRIG = arg(0)
+		self.ECHO = arg(1)
+
+	#import RPi.GPIO as GPIO
+	#import time
+
+	def get_distance():
+
+		while(bool_sr04 == True):
+			GPIO.setmode(GPIO.BCM)
+			#TRIG = 23 
+			#ECHO = 24
+
+			#print "Distance Measurement In Progress"
+
+			GPIO.setup(TRIG,GPIO.OUT)
+			GPIO.setup(ECHO,GPIO.IN)
+
+			GPIO.output(TRIG, False)
+			#print "Waiting For Sensor To Settle"
+			time.sleep(2)
+
+			GPIO.output(TRIG, True)
+			time.sleep(0.00001)
+			GPIO.output(TRIG, False)
+
+			while GPIO.input(ECHO)==0:
+			  pulse_start = time.time()
+
+			while GPIO.input(ECHO)==1:
+			  pulse_end = time.time()
+
+			pulse_duration = pulse_end - pulse_start
+
+			distance = pulse_duration * 17150
+
+			distance = round(distance, 2)
+
+			return "Distance:",distance,"cm"
+
+			GPIO.cleanup()		
 
 
 
