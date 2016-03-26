@@ -138,22 +138,6 @@ def createLog():
 	conn.close()
 
 # display the contents of the database
-def createTipoSensor():
-	# conectando...
-	conn = sqlite3.connect(dbname)
-	# definindo um cursor
-	cursor = conn.cursor()
-	# criando a tabela (schema)
-	cursor.execute("""
-	CREATE TIPO_SENSOR(
-	        id 			INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	        tipo_sensor VARCHAR(20)
-	);
-	""")
-	# desconectando...
-	conn.close()	
-
-# display the contents of the database
 def createSensor():
 	# conectando...
 	conn = sqlite3.connect(dbname)
