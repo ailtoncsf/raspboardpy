@@ -22,22 +22,16 @@
 
     <!-- <link rel="shortcut icon" href="{[{ url_for('static', filename='ico/favicon.ico') }]}"> -->
     {% block head %}
-      <title>{% block title %} Title!{% endblock %}</title>
+      <title>{% block title %} Raspboardpy{% endblock %}</title>
     {% endblock %}
   </head>
 
   <body>
-    <div ng-controller="dashboardController" class="col-sm-10 col-sm-push-1">
-    <div class="page-header">
-      <h1>
-        DashBoard<small><BR>Consulta dinâmica a sensores</small>
-      </h1>
-    </div>
-
-
+    <div ng-controller="dashboardController">
+  <BR>
     <div class="col-sm-12">
       <div class="panel panel-primary">
-        <div class="panel-heading">Sensores</div>
+        <div class="panel-heading"><i class="glyphicon glyphicon-scale"></i>&nbsp; DashBoard</div>
         <div class="panel-body">
           <div ng-if="haserror" class="alert alert-danger" role="alert">
             <span class="glyphicon glyphicon-exclamation-sign"
@@ -48,35 +42,39 @@
             <span class="glyphicon glyphicon-exclamation-sign"
               aria-hidden="true"></span> <span class="sr-only">{[{hassuccess}]}</span>
           </div>
-          <div ng-repeat="tipo in tipos"class="form-group">
-                 <label > {[{tipo.nome}]}</label>
+          <div class="form-group col-sm-2">
+            <div ng-repeat="tipo in tipos" class="form-group">
+                  <fieldset>
+                      <legend class="small">{[{tipo.nome|uppercase}]} - {[{tipo.variavel}]}</legend>
+                   <div > <!-- ng-if="tipo.checked" -->
+                      <form class="form">
+                            <div class="form-group">
+                            <div ng-repeat="porta in tipo.portas" >
+                              <label > {[{porta.nome}]}:</label>
+                              <input type="text" class="form-control input-sm" ng-model="porta.valor" 
+                              placeholder="{[{porta.valor}]}">
+                            </div>
+                          </div>
+                            <div ng-click="addSensor(tipo.nome,tipo.portas)" style="float:right;" class="btn btn-primary btn-xs">
+                            <i class="glyphicon glyphicon-plus"></i>
+                            </div>
+                      </form>
+                    </div>
+            
+                    </fieldset> 
+            </div>
           </div>
-          <div class="form-group" style="float: right;">
-            <button type="button"
-              ng-click="addSensor()" class="btn btn-primary">
-              <i class="glyphicon glyphicon-plus"></i>
-            </button>
-          </div>
-        </div>
-        <div class="panel-footer">
-          <label>:: Em execução:</label>
-          <div class="form-group">
-            <div class="col-sm-4" ng-repeat="(k,i) in instances">
-             <label >Sensor #{[{k}]}</label>
-                 <div id={[{ chartID|safe }]} class="chart" style="height: 100px; width: 500px"></div>
-                <script>
-                  var chart_id = {[{ chartID|safe }]}
-                  var series = {[{ series|safe }]}
-                  var title = {[{ title|safe }]}
-                  var xAxis = {[{ xAxis|safe }]}
-                  var yAxis = {[{ yAxis|safe }]}
-                  var chart = {[{ chart|safe }]}
-                </script>
+          <div class="form-group col-sm-8">
+             <div class="col-sm-4" ng-repeat="(k, value) in sensores" >
+                <label >Sensor #{[{k}]}</label>
+                <chart value="value"></chart>
+                
               <button type="button" class="btn btn-xs btn-danger"
                 ng-click="stop(k)">
                 <i class="glyphicon glyphicon-stop"></i> Parar
               </button>
-            </div>
+            </div> 
+            
           </div>
         </div>
       </div>
