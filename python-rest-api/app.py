@@ -1,66 +1,146 @@
-###########################################################################################
-## http://code.runnable.com/UuZA5ZA6voMLAAAX/rest-ful-api-example-using-flask-for-python ##
-###########################################################################################
-from flask import Flask
-from flask.ext.restful import reqparse, abort, Api, Resource
+#!/usr/bin/env python
+from flask import Flask, render_template, request
+import sqlite3
 
 app = Flask(__name__)
-api = Api(app)
 
-USERS = {
-    'user1': {'name': 'mike', 'email':'aaa@gmail.com'},
-    'user2': {'name': 'lalit','email':'aaa@gmail.com'},
-    'user3': {'name': 'sunil','email':'aaa@gmail.com'},
-}
+dbname='sensores.db'
+sensor_list = "[{id: 1, nome: sr04}, {id:2, nome: sr05}, {id:3, nome: dht11}]"
 
 
-def abort_if_user_doesnt_exist(user_id):
-    if user_id not in USERS:
-        abort(404, message="User {} doesn't exist".format(user_id))
-
-parser = reqparse.RequestParser()
-parser.add_argument('user', type=str)
-
-
-# User
-#   show a single user and lets you delete them
-class User(Resource):
-    def get(self, user_id):
-        abort_if_user_doesnt_exist(user_id)
-        return USERS[user_id]
-
-    def delete(self, user_id):
-        abort_if_user_doesnt_exist(user_id)
-        del USERS[user_id]
-        return '', 204
-
-    def put(self, user_id):
-        args = parser.parse_args()
-        name = {'name': args['name'],'email':args['email']}
-        USERS[user_id] = name
-        return user, 201
+@app.route('/')
+@app.route('/index')
+def index(chartID = 'chart_ID', chart_type = 'bar', chart_height = 350):
+    chart = {"renderTo": chartID, "type": chart_type, "height": chart_height,}
+    series = [{"name": 'Label1', "data": [1,2,3]}, {"name": 'Label2', "data": [4, 5, 6]}]
+    title = {"text": 'My Title'}
+    xAxis = {"categories": ['xAxis Data1', 'xAxis Data2', 'xAxis Data3']}
+    yAxis = {"title": {"text": 'yAxis Label'}}
+    rs = display_data(None)
+    return render_template('index.html', chartID=chartID, chart=chart, series=series, title=title, xAxis=xAxis, yAxis=yAxis, rs=rs)
 
 
-# UserList
-#   shows a list of all users, and lets you POST to add new users
-class UserList(Resource):
-    def get(self):
-        return USERS
+@app.route('/list_sensors')
+def get_list_sensors():
+	return sensor_list
 
-    def post(self):
-        args = parser.parse_args()
-        user_id = 'user%d' % (len(USERS) + 1)
-        USERS[user_id] = {'name': args['name'],'email': args['email']}
-        return USERS[user_id], 201
+@app.route('/sr04', methods=('GET', 'POST'))
+def addsensor():
+	tipo_sensor = request.args.get('tipo_sensor')
+	echo = request.args.get('echo')
+	trigger = request.args.get('trigger')
 
-##
-## Actually setup the Api resource routing here
-##
-api.add_resource(UserList, '/users')
-api.add_resource(User, '/users/<string:user_id>')
+    chart = {"renderTo": chartID, "type": chart_type, "height": chart_height,}
+    series = [{"name": 'Label1', "data": [1,2,3]}, {"name": 'Label2', "data": [4, 5, 6]}]
+    title = {"text": 'SR-04'}
+    xAxis = {"categories": ['xAxis Data1', 'xAxis Data2', 'xAxis Data3']}
+    yAxis = {"title": {"text": 'yAxis Label'}}
 
-if __name__ == '__main__':
-	app.run( 
-        host="0.0.0.0",
-        port=int("5000")
-  )
+    #sr04 = new sr04()
+	return tipo_sensor + ' '+ trigger
+
+@app.route('/sr04', methods=('GET', 'POST'))
+def addsensor():
+	tipo_sensor = request.args.get('tipo_sensor')
+	echo = request.args.get('echo')
+	trigger = request.args.get('trigger')
+
+    #sr04 = new sr04()
+	return tipo_sensor + ' '+ trigger
+
+@app.route('/sr04', methods=('GET', 'POST'))
+def addsensor():
+	tipo_sensor = request.args.get('tipo_sensor')
+	echo = request.args.get('echo')
+	trigger = request.args.get('trigger')
+
+    #sr04 = new sr04()
+	return tipo_sensor + ' '+ trigger
+
+@app.route('/create/database')
+def create_database():
+	execute_createDatabase()
+	return 'Tabela criada com sucesso.'
+
+# store the temperature in the database
+def gravar_dados_sensor(values=()):
+    conn=sqlite3.connect(dbname)
+    cur=conn.cursor()
+    query = 'INSERT INTO log (tipo_sensor, valor, unidade, variavel, data) VALUES (%s)' % (
+        ', '.join(['?'] * len(values))
+    )
+    cur.execute(query, values)
+    g.db.commit()
+    id = cur.lastrowid
+    cur.close()
+    return id
+
+# store the temperature in the database
+def gravar_dados(tipo_sensor, valor, unidade, variavel, data):
+
+	conn=sqlite3.connect(dbname)
+	curs=conn.cursor()
+	curs.execute('''INSERT INTO log (tipo_sensor, valor, unidade, variavel, data)
+	values (%s, %s, %s, %s, %s)''',
+	(tipo_sensor, valor, unidade, variavel, data))         		  
+	# commit the changes
+	conn.commit()
+
+	conn.close()
+
+# display the contents of the database
+def display_data(interval):
+
+    conn=sqlite3.connect(dbname)
+    curs=conn.cursor()
+
+    if interval == None:
+        curs.execute("SELECT * FROM log;")
+    else:
+        curs.execute("SELECT * FROM temps WHERE timestamp > datetime('now','-%s hours')" % interval)
+
+    rows=curs.fetchall() 
+    return rows  
+
+
+# display the contents of the database
+def execute_createDatabase():
+	# conectando...
+	conn = sqlite3.connect(dbname)
+	# definindo um cursor
+	cursor = conn.cursor()
+
+	# criando a tabela (schema)
+	cursor.execute("""
+	CREATE TABLE log (
+	        id 			   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	        id_tipo_sensor VARCHAR(20),
+	        valor 		   NUMERIC,
+	        unidade        VARCHAR(20),
+	        variavel 	   VARCHAR(20),
+	        data 		   TIMESTAMP
+	);
+	""")
+	# criando a tabela (schema)
+	cursor.execute("""
+	CREATE TIPO_SENSOR log (
+	        id 			INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	        tipo_sensor VARCHAR(20)
+	);
+	""")
+	# criando a tabela (schema)
+	cursor.execute("""
+	CREATE SENSOR log (
+	        id 			INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	        tipo_sensor VARCHAR(20)
+	);
+	""")	
+
+
+	# desconectando...
+	conn.close()
+
+
+
+if __name__ == "__main__":
+    app.run(debug = True, host='0.0.0.0', port=8080, passthrough_errors=True)
