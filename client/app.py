@@ -1,11 +1,13 @@
 #!/env/bin/env python
 # -*- coding: utf-8 -*-
+import random,datetime
+from time import gmtime, strftime
 from flask import Flask,json, render_template,request
 
 app = Flask(__name__)
 
 
-sensor_list = [\
+sensor_type_list = [\
 {'id':1, 'nome': 'sr04','variavel':'Distância','unidade':'cm',\
 'portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
 {'id':2, 'nome': 'sr05','variavel':'Distância','unidade':'cm',\
@@ -16,8 +18,11 @@ sensor_list = [\
 'portas':[{'nome':'Data','valor':'23'}]}\
 ]
 
-defaultJson={ "chart" : { "type": "bar", "height": 350},\
-"series":[{"name": 'Label1', "data": [1,2,3]}, {"name": 'Label2', "data": [4, 5, 6]}],\
+sensor_list = [99996,99997,99998,99999]
+
+defaultJson={ "chart" : {  "type": "line", "height": 350},\
+"plotOptions": {"series": { "animation": "false"}},\
+"series":[{"name": 'Label1', "data": [1,2,3,8]}, {"name": 'Label2', "data": [4, 5, 6,9]}],\
 "title":{"text": 'Temperatura (SR04#99999)'},\
 "xAxis":{"categories": ['xAxis Data1', 'xAxis Data2', 'xAxis Data3']},\
 "yAxis":{"title": {"text": 'yAxis Label'}}}
@@ -27,32 +32,45 @@ defaultJson={"chart": {"height": 350, "type": "line"}, "legend": {"legend": {"al
 
 @app.route('/')
 @app.route('/index')
-def index(chartID = 'chart_ID', chart_type = 'bar', chart_height = 350):
-  chart = {"renderTo": chartID, "type": chart_type, "height": chart_height,}
-  series = [{"name": 'Label1', "data": [1,2,3]}, {"name": 'Label2', "data": [4, 5, 6]}]
-  title = {"text": 'Temperatura (SR04#9879879)'}
-  xAxis = {"categories": ['xAxis Data1', 'xAxis Data2', 'xAxis Data3']}
-  yAxis = {"title": {"text": 'yAxis Label'}}
-  return render_template('index.html', chartID=chartID, chart=chart, series=series, title=title, xAxis=xAxis, yAxis=yAxis)
+def index():
+  return render_template('index.html')
 
 @app.route('/api/sensor/tipos')
 def getTipos():
-  return json.dumps(sensor_list)
+  return json.dumps(sensor_type_list)
 
 
-@app.route('/api/sr04')
-def addSensorSR04():
+@app.route('/api/sensor/start')
+def startSensor():
+  tipo = request.args.get('tipo')
+  portas = request.args.get('portas')
   return json.dumps(99999)
 
-@app.route('/api/sensor')
-def getChartSR04():
+@app.route('/api/sensor/stop')
+def stopSensor():
   sensor_id = request.args.get('sensor_id')
+  return json.dumps("STOPPED")
+
+
+@app.route('/api/sensor/listall')
+def listAll():
+  return json.dumps(sensor_list)
+
+@app.route('/api/sensor/chart')
+def getChart():
+  sensor_id = request.args.get('sensor_id')
+  defaultJson["series"][0]["data"].append(random.randint(0,99));
+  defaultJson["series"][1]["data"].append(random.randint(0,99));
+  defaultJson["xAxis"]["categories"].append(strftime("%H:%M:%S",gmtime()))
+  if(len(defaultJson["series"][0]["data"]) > 10):
+      defaultJson["series"][0]["data"].pop(0)
+  if(len(defaultJson["series"][1]["data"]) > 10):
+      defaultJson["series"][1]["data"].pop(0)
+  if(len(defaultJson["xAxis"]["categories"]) > 10):
+      defaultJson["xAxis"]["categories"].pop(0)
   return json.dumps(defaultJson)
 
-@app.route('/api/sensordata')
-def getDataSR04():
-  sensor_id = request.args.get('sensor_id')
-  return json.dumps(defaultJson)
+
 
 if __name__ == "__main__":
   app.run(debug = True, host='0.0.0.0', port=8080, passthrough_errors=True)

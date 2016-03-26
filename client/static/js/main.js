@@ -11,33 +11,35 @@ angular.module('raspboardpyApp', []).config(function($interpolateProvider){
     success(function(data) {
         $scope.tipos = data;
     });
-   
+    
+    $http.get('/api/sensor/listall').
+    success(function(list) {
+      list.forEach(function(sensor_id){
+          $scope.sensores[sensor_id] = {};
+          $scope.getChartUpdated(sensor_id);
+        })
+    });
 
-   /* $interval(function(){
-      sensores.forEach(function(sensor_id){
-        $http.get('/api/sensordata?sensor_id='+sensor_id).
-        success(function(data) {
-            $scope.instances = data;
-        });
-      
-      })     
-    },1000);*/
     $scope.addSensor = function(tipo,portas){
       var __portas = [];
       portas.forEach(function(port){
         __portas.push(port["valor"]);
       })
-      $http.get('/api/'+tipo+'?portas='+__portas).
+      $http.get('/api/sensor/start?tipo='+tipo+'&portas='+__portas).
         success(function(sensor_id) {
           $scope.sensores[sensor_id] = {};
-          $http.get('/api/sensor?sensor_id='+sensor_id).
-            success(function(chart) {
-              $scope.sensores[sensor_id] = chart;
-                $(chart.chart.renderTo).highcharts(chart);
-            });
+          $scope.getChartUpdated(sensor_id);
       });
     }
 
+    $scope.getChartUpdated = function(sensor_id){
+      $interval(function(){
+      $http.get('/api/sensor/chart?sensor_id='+sensor_id).
+      success(function(chart) {
+          $scope.sensores[sensor_id] = chart;
+      });
+      },1000);
+    }
 }]).directive('chart', function() {
     return {
         restrict: 'E',
@@ -67,7 +69,23 @@ angular.module('raspboardpyApp', []).config(function($interpolateProvider){
                 if ($attrs.width)
                     $scope.chartData.chart.width = $scope.chartData.chart.type || $attrs.width;
 
-                $scope.chartObj = new Highcharts.Chart($scope.chartData);
+          
+                Highcharts.setOptions({
+                      plotOptions: {
+                          line : {
+                            animation : {
+                                duration : 0
+                            }
+                          },
+                          bar : {
+                            animation : {
+                                duration : 0
+                            }
+                          }
+                      }
+                  });
+                 $scope.chartObj = new Highcharts.Chart($scope.chartData);
+
             });
         }
     };
