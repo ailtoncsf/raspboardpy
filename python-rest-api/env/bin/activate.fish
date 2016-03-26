@@ -32,7 +32,7 @@ end
 # unset irrelevant variables
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/var/www/html/python-rest-api/env"
+set -gx VIRTUAL_ENV "/tmp/raspboardpy/python-rest-api/env"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
