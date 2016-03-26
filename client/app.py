@@ -22,6 +22,9 @@ defaultJson={ "chart" : { "type": "bar", "height": 350},\
 "xAxis":{"categories": ['xAxis Data1', 'xAxis Data2', 'xAxis Data3']},\
 "yAxis":{"title": {"text": 'yAxis Label'}}}
 
+#Dados gerados pelos testes de Ailton
+defaultJson={"chart": {"height": 350, "type": "line"}, "legend": {"legend": {"align": "right", "borderWidth": 0, "layout": "vertical", "verticalAlign": "middle"}}, "series": [{"data": [6.75, 6.17, 7.89, 9.92, 9.74, 8.57, 9.28, 8.71, 6.12, 8.47], "name": "HC-SR04"}], "subtitle": {"text": "Medindo distancia", "x": -20}, "title": {"text": "Sensor HC-SR04", "x": -20}, "tooltip": {"tooltip": {"valueSuffix": "cm"}}, "xAxis": {"categories": ["18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53"]}, "yAxis": {"plotLines": [{"color": "#808080", "value": 0, "width": 1}], "title": {"text": "Distancia (cm)"}}}
+
 @app.route('/')
 @app.route('/index')
 def index(chartID = 'chart_ID', chart_type = 'bar', chart_height = 350):

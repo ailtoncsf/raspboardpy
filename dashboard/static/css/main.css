@@ -22,7 +22,9 @@ header a, a:visited {
     color:#fcfcfc;
 }
 body {
-    background:url("background.jpg") no-repeat scroll top center transparent;
+    background-image:url("background.jpg");
+    background-size: cover;
+    background-attachment: fixed;
 }
 .actions, .chart {
     margin: 15px auto;

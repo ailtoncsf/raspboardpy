@@ -1,5 +1,5 @@
 @echo off
-set "VIRTUAL_ENV=C:\Users\ailton.filho\Documents\raspboardpy\python-rest-api\wenv"
+set "VIRTUAL_ENV=C:\Users\ailton.filho\Documents\raspboardpy\dashboard\wenv"
 
 if defined _OLD_VIRTUAL_PROMPT (
     set "PROMPT=%_OLD_VIRTUAL_PROMPT%"
