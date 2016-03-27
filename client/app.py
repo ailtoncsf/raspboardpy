@@ -17,7 +17,7 @@ threads_list = []
 sensor_type_list = {\
 'sr04': {'variavel':'Distância','unidade':['cm'],'portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
 'sr05': {'variavel':'Distância','unidade':['cm'],'portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
-'dht11':{'variavel':'Temperatura/Umidade','unidade':['h','C'],'portas':[{'nome':'Data','valor':'23'}]},\
+'dht11':{'variavel':'Temperatura/Umidade','unidade':['%','C'],'portas':[{'nome':'Data','valor':'23'}]},\
 'pir':  {'variavel':'Movimento','unidade':['n/a'],'portas':[{'nome':'Data','valor':'23'}]}}
 
 sensor_list = []
@@ -59,14 +59,19 @@ def getTipos():
 def startSensor():
 
   tipo = request.args.get('tipo')
-  portas = request.args.get('portas')
-    #salvar no banco e retornar o id
+  data = request.args.get('data')
+  echo = request.args.get('echo')
+  trigger = request.args.get('trigger')
+
+  #salvar no banco e retornar o id
   id_sensor = db_insert_sensor((tipo,))
-    #inicia uma thread lendo o sensor de Junior
-  thread_async = create_async_sensor(id_sensor,tipo, {"echo": 23, "trigger":24})
+
+  #inicia uma thread lendo o sensor de Junior
+  thread_async = create_async_sensor(id_sensor,tipo, {"data":data, "echo":echo, "trigger":trigger})
+
+  #executar(tipo,portas); -> guardar na variavel global para futura recuperacao. #id, thread
   threads_list.append(thread_async)
 
-    #executar(tipo,portas); -> guardar na variavel global para futura recuperacao. #id, thread
   return json.dumps(id_sensor)
 
 @app.route('/api/sensor/stop')

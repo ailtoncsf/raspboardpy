@@ -32,12 +32,12 @@ class SRF05(UltrasonicSensor):
         GPIO.setup(self.__trigger,GPIO.OUT)
         GPIO.setup(self.__echo,GPIO.IN)
         self.__distance = ""
-        try:
-            ser = serial.Serial('/dev/ttyAMA0', 9600, timeout=1)
-            ser.open()
-        except:
-            print ("no device connected")
-            exit(0)
+        # try:
+        #    ser = serial.Serial('/dev/ttyAMA0', 9600, timeout=1)
+        #    ser.open()
+        #except:
+        #    print ("no device connected")
+        #    exit(0)
 
     def changeSetup(self, trigger, echo):
         """

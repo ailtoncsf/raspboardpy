@@ -21,11 +21,8 @@ angular.module('raspboardpyApp', []).config(function($interpolateProvider){
     });
 
     $scope.addSensor = function(tipo,portas){
-      var __portas = [];
-      portas.forEach(function(port){
-        __portas.push(port["valor"]);
-      })
-      $http.get('/api/sensor/start?tipo='+tipo+'&portas='+__portas).
+      
+     $http.get('/api/sensor/start?tipo='+tipo +'&data='+portas.data +'&echo='+portas.echo +'&trigger='+portas.trigger).
         success(function(sensor_id) {
           $scope.sensores[sensor_id] = {};
           $scope.getChartUpdated(sensor_id);
