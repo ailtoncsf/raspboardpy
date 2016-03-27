@@ -24,7 +24,21 @@ def create_async_sensor(sensor_id, tipo, portas):
         time.sleep(5)
     #finally:
     # print 'Fim'  
-    # RPi.GPIO.cleanup()  
+    # RPi.GPIO.cleanup() 
+  if(tipo == "sr05"):
+    #try:
+    # srf04 = UltrasonicSensorFactory.createSensor("SRF04")
+    # srf04.changeSetup(portas.echo, portas.trigger)
+    # srf04.setup()
+      while (True):
+    #   distancia_cm = srf04.distance_in_cm()
+    #   distancia_in = srf04.distance_in_inches()
+        distancia_cm = round(random.uniform(5, 10),2)
+        gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
+        time.sleep(5)
+    #finally:
+    # print 'Fim'  
+    # RPi.GPIO.cleanup()      
   if(tipo == "dht11"):
     #try:
     # srf04 = UltrasonicSensorFactory.createSensor("SRF04")
