@@ -95,14 +95,98 @@ def getChart():
     datetimes.append(dado[0])
     valores.append(dado[1])
 
-  chartJson = {"chart": {"type": "line", "height": "400"},\
-  "title":{"text": "Sensor " + sensor_id + "(" + sensor_type + ")", "x": -20},\
-  "subtitle":{"text": "Medindo " + variavel, "x": -20},\
-  "xAxis":{"categories": ast.literal_eval(json.dumps(datetimes))},\
-  "yAxis":{"title": {"text": variavel + " (" + unidade+ ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
-  "tooltip":{"tooltip":{"valueSuffix":  unidade}},\
-  "legend":{"legend" : {"layout": 'vertical', "align": "right", "verticalAlign": "middle", "borderWidth": 0}},\
-  "series":[{"name": variavel, "data": valores}]}
+  if(sensor_type == "sr04"):
+    chartJson = {"chart": {"type": "line", "height": "400"},\
+    "title":{"text": "Sensor " + sensor_id + "(" + sensor_type.upper() + ")", "x": -20},\
+    "subtitle":{"text": "Medindo " + variavel, "x": -20},\
+    "xAxis":{"categories": ast.literal_eval(json.dumps(datetimes))},\
+    "yAxis":{"title": {"text": variavel + " (" + unidade+ ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
+    "tooltip":{"tooltip":{"valueSuffix":  unidade}},\
+    "legend":{"legend" : {"layout": 'vertical', "align": "right", "verticalAlign": "middle", "borderWidth": 0}},\
+    "series":[{"name": variavel, "data": valores}]}
+
+  if(sensor_type == "sr05"):
+    chartJson = {"chart": {"type": "line", "height": "400"},\
+    "title":{"text": "Sensor " + sensor_id + "(" + sensor_type.upper() + ")", "x": -20},\
+    "subtitle":{"text": "Medindo " + variavel, "x": -20},\
+    "xAxis":{"categories": ast.literal_eval(json.dumps(datetimes))},\
+    "yAxis":{"title": {"text": variavel + " (" + unidade+ ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
+    "tooltip":{"tooltip":{"valueSuffix":  unidade}},\
+    "legend":{"legend" : {"layout": 'vertical', "align": "right", "verticalAlign": "middle", "borderWidth": 0}},\
+    "series":[{"name": variavel, "data": valores}]}
+
+
+  if(sensor_type == "dht11"):
+    chartJson =  {"chart": {
+            "zoomType": 'xy'
+        },
+        "title": {
+            "text": "Sensor " + sensor_id + "(" + sensor_type.upper() + ")"
+        },
+        "subtitle": {
+            "text": "Medindo " + variavel
+        },
+        "xAxis": [{
+            "categories": ast.literal_eval(json.dumps(datetimes)),
+            "crosshair": "true"
+        }],
+        "yAxis": [{ 
+            "labels": {
+                "format": '{value}°C',
+                "style": {
+                    "color": "#808060"
+                }
+            },
+            "title": {
+                "text": 'Temperatura',
+                "style": {
+                    "color": "#808060"
+                }
+            }
+        }, { 
+            "title": {
+                "text": 'Humidade',
+                "style": {
+                    "color": "#805050"
+                }
+            },
+            "labels": {
+                "format": '{value} h',
+                "style": {
+                "color": "#805050"
+                }
+            },
+            "opposite": "true"
+        }],
+        "tooltip": {
+            "shared": "true"
+        },
+        "legend": {
+            "layout": 'vertical',
+            "align": 'left',
+            "x": 120,
+            "verticalAlign": 'top',
+            "y": 100,
+            "floating": "true",
+            "backgroundColor": '#FFFFFF'
+        },
+        "series": [{
+            "name": 'Humidade',
+            "type": 'column',
+            "yAxis": 1,
+            "data": valores,
+            "tooltip": {
+                "valueSuffix": ' h'
+            }
+
+        }, {
+            "name": 'Temperatura',
+            "type": 'spline',
+            "data": valores,
+            "tooltip": {
+                "valueSuffix": '°C'
+            }
+        }]}
 
   return json.dumps(chartJson)
 
