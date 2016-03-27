@@ -1,6 +1,9 @@
 rm -rf env
 virtualenv --system-site-packages --python=python2.7 env
-source /env/bin/activate
-pip --version
+source env/bin/activate
 pip install rpi.gpio flask pyserial
-python PIGPIO/setup.py install
+cd PIGPIO/
+python setup.py install
+cd ../libsensorPy
+python setup.py install
+cd ..
