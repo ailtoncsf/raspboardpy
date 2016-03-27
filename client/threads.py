@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
-from .decorators import async
-from concretefactory.ultrasonicSensorFactory import UltrasonicSensorFactory
+from decorators import async
+#from concretefactory.ultrasonicSensorFactory import UltrasonicSensorFactory
 import datetime
-import RPi.GPIO
+#import RPi.GPIO
 
 #Arquivo de banco de dados do SQLite
 dbname='sensores.db'
@@ -11,21 +11,19 @@ dbname='sensores.db'
 @async
 def create_async_sensor(sensor_id, tipo, portas):
 
-	if(tipo == "sr04"):
-		#try:
-		#	srf04 = UltrasonicSensorFactory.createSensor("SRF04")
-		#	srf04.changeSetup(portas.echo, portas.trigger)
-		#	srf04.setup()
-			while (True):
-		#		distancia_cm = srf04.distance_in_cm()
-		#		distancia_in = srf04.distance_in_inches()
-				distancia_cm = round(random.uniform(5, 10),2)
-				distancia_in = round(random.uniform(5, 10),2)
-				gravar_dados_sensor(sensor_id, distancia_cm, "cm", "Distância", datetime.datetime.now())
-				gravar_dados_sensor(sensor_id, distancia_in, "in", "Distância", datetime.datetime.now())
-		#finally:
-		#	print 'Fim'  
-		#	RPi.GPIO.cleanup()  
+  if(tipo == "sr04"):
+    #try:
+    # srf04 = UltrasonicSensorFactory.createSensor("SRF04")
+    # srf04.changeSetup(portas.echo, portas.trigger)
+    # srf04.setup()
+      while (True):
+    #   distancia_cm = srf04.distance_in_cm()
+    #   distancia_in = srf04.distance_in_inches()
+        distancia_cm = round(random.uniform(5, 10),2)
+        gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
+    #finally:
+    # print 'Fim'  
+    # RPi.GPIO.cleanup()  
 
 # store the temperature in the database
 def gravar_dados_sensor(values=()):
@@ -40,4 +38,3 @@ def gravar_dados_sensor(values=()):
     cur.close()
     conn.close()
     return id
-

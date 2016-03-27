@@ -43,13 +43,13 @@
               aria-hidden="true"></span> <span class="sr-only">{[{hassuccess}]}</span>
           </div>
           <div class="form-group col-sm-2">
-            <div ng-repeat="tipo in tipos" class="form-group">
+            <div ng-repeat="(key,tipo) in tipos" class="form-group">
                   <fieldset>
-                      <legend class="small">{[{tipo.nome|uppercase}]} - {[{tipo.variavel}]}</legend>
+                      <legend class="small">{[{key|uppercase}]} - {[{tipos[key].variavel}]}</legend>
                    <div > <!-- ng-if="tipo.checked" -->
                       <form class="form">
                             <div class="form-group">
-                            <div ng-repeat="porta in tipo.portas" >
+                            <div ng-repeat="porta in tipos[key].portas" >
                               <label > {[{porta.nome}]}:</label>
                               <input type="text" class="form-control input-sm" ng-model="porta.valor" 
                               placeholder="{[{porta.valor}]}">

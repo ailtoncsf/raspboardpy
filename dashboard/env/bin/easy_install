@@ -1,4 +1,4 @@
-#!/tmp/raspboardpy/python-rest-api/env/bin/python3.4
+#!/tmp/raspboardpy/dashboard/env/bin/python
 
 # -*- coding: utf-8 -*-
 import re

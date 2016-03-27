@@ -38,7 +38,7 @@ angular.module('raspboardpyApp', []).config(function($interpolateProvider){
       success(function(chart) {
           $scope.sensores[sensor_id] = chart;
       });
-      },1000);
+      },3000);
     }
 }]).directive('chart', function() {
     return {

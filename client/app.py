@@ -1,9 +1,10 @@
 #!/env/bin/env python
 # -*- coding: utf-8 -*-
-import random,datetime
+import random,datetime,sqlite3,ast
 from time import gmtime, strftime
 from flask import Flask,json, render_template, request
-from concretefactory.ultrasonicSensorFactory import UltrasonicSensorFactory
+from threads import create_async_sensor
+#from concretefactory.ultrasonicSensorFactory import UltrasonicSensorFactory
 #import RPi.GPIO
 
 app = Flask(__name__)
@@ -11,25 +12,13 @@ app = Flask(__name__)
 #Arquivo de banco de dados do SQLite
 dbname='sensores.db'
 
-sensor_type_list = [\
-{'id':1, 'nome': 'sr04','variavel':'Distância','unidade':'cm',\
-'portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
-{'id':2, 'nome': 'sr05','variavel':'Distância','unidade':'cm',\
-'portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
-{'id':3, 'nome':'dht11','variavel':'Temperatura/Umidade','unidade':'Celsius, N/A',\
-'portas':[{'nome':'Data','valor':'23'}]},\
-{'id':4, 'nome':  'pir','variavel':'Movimento','unidade':'N/A',\
-'portas':[{'nome':'Data','valor':'23'}]}\
-]
+sensor_type_list = {\
+'sr04': {'variavel':'Distância','unidade':'cm','portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
+'sr05': {'variavel':'Distância','unidade':'cm','portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
+'dht11':{'variavel':'Temperatura/Umidade','unidade':'Celsius, N/A','portas':[{'nome':'Data','valor':'23'}]},\
+'pir':  {'variavel':'Movimento','unidade':'N/A','portas':[{'nome':'Data','valor':'23'}]}}
 
-sensor_list = [99996,99997,99998,99999]
-
-# defaultJson={ "chart" : {  "type": "line", "height": 350},\
-# "plotOptions": {"series": { "animation": "false"}},\
-# "series":[{"name": 'Label1', "data": [1,2,3,8]}, {"name": 'Label2', "data": [4, 5, 6,9]}],\
-# "title":{"text": 'Temperatura (SR04#99999)'},\
-# "xAxis":{"categories": ['xAxis Data1', 'xAxis Data2', 'xAxis Data3']},\
-# "yAxis":{"title": {"text": 'yAxis Label'}}}
+sensor_list = []
 
 #Dados gerados pelos testes de Ailton
 defaultJson={"chart": {"height": 350, "type": "line"}, 
@@ -39,11 +28,25 @@ defaultJson={"chart": {"height": 350, "type": "line"},
 "tooltip": {"tooltip": {"valueSuffix": "cm"}}, 
 "xAxis": {"categories": ["18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53", "18:18:53"]}, 
 "yAxis": {"plotLines": [{"color": "#808080", "value": 0, "width": 1}], "title": {"text": "Distancia (cm)"}}}
-
+    
 @app.route('/')
 @app.route('/index')
 def index():
   return render_template('index.html')
+
+@app.route('/create')
+def create_objects():
+  """
+  Este método leva em consideração a não existencia do arquivo de banco de dados
+  do SQlite3 no diretório [sensores.db], sendo assim, ele irá criar o banco e as tabelas.
+  Obs: Não executar caso o banco já esteja criado, pois será retornada uma msg de erro.
+  """
+  try:
+    createLog()
+    createSensor()
+    return 'Tabelas criadas com sucesso.'
+  except Exception, e:
+    return 'Failed to create Database and tables: '+ str(e)
 
 @app.route('/api/sensor/tipos')
 def getTipos():
@@ -55,11 +58,11 @@ def startSensor():
 
   tipo = request.args.get('tipo')
   portas = request.args.get('portas')
-  id_sensor = db_insert_sensor((tipo,))
-  create_async_sensor(tipo, {"echo": 23, "trigger":24})
-
     #salvar no banco e retornar o id
+  id_sensor = db_insert_sensor((tipo,))
     #inicia uma thread lendo o sensor de Junior
+  create_async_sensor(id_sensor,tipo, {"echo": 23, "trigger":24})
+
     #executar(tipo,portas); -> guardar na variavel global para futura recuperacao. #id, thread
   return json.dumps(id_sensor)
 
@@ -72,22 +75,36 @@ def stopSensor():
 
 @app.route('/api/sensor/listall')
 def listAll():
+  sensor_list = db_get_sensores()
+
+
   return json.dumps(sensor_list)
 
 @app.route('/api/sensor/chart')
 def getChart():
   sensor_id = request.args.get('sensor_id')
-  defaultJson["series"][0]["data"].append(random.randint(0,99));
- # defaultJson["series"][1]["data"].append(random.randint(0,99));
-  defaultJson["xAxis"]["categories"].append(strftime("%H:%M:%S",gmtime()))
-  
-  if(len(defaultJson["series"][0]["data"]) > 10):
-      defaultJson["series"][0]["data"].pop(0)
-  #if(len(defaultJson["series"][1]["data"]) > 10):
-   #   defaultJson["series"][1]["data"].pop(0)
-  if(len(defaultJson["xAxis"]["categories"]) > 10):
-      defaultJson["xAxis"]["categories"].pop(0)
-  return json.dumps(defaultJson)
+  sensor_type = db_get_sensor_type(sensor_id)
+  variavel = ast.literal_eval(sensor_type_list[ast.literal_eval(sensor_type)]["variavel"])
+  unidade = sensor_type_list[sensor_type]["unidade"]
+
+  dados = display_data(sensor_id);
+  datetimes = []
+  valores = []
+
+  for dado in dados:
+    datetimes.append(dado[0])
+    valores.append(dado[1])
+
+  chartJson = {"chart": {"type": "line", "height": "400"},\
+  "title":{"text": "Sensor " + sensor_id + "(" + sensor_type + ")", "x": -20},\
+  "subtitle":{"text": "Medindo distancia", "x": -20},\
+  "xAxis":{"categories": ast.literal_eval(json.dumps(datetimes))},\
+  "yAxis":{"title": {"text": variavel + " (" + unidade+ ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
+  "tooltip":{"tooltip":{"valueSuffix":  unidade}},\
+  "legend":{"legend" : {"layout": 'vertical', "align": "right", "verticalAlign": "middle", "borderWidth": 0}},\
+  "series":[{"name": variavel, "data": valores}]}
+
+  return json.dumps(chartJson)
 
 # store the temperature in the database
 def db_insert_sensor(values=()):
@@ -103,39 +120,87 @@ def db_insert_sensor(values=()):
     conn.close()
     return id     
 
-@async
-def create_async_sensor(sensor_id, tipo, portas):
+# display the contents of the database
+def display_data(sensor_id):
 
-  if(tipo == "sr04"):
-    #try:
-    # srf04 = UltrasonicSensorFactory.createSensor("SRF04")
-    # srf04.changeSetup(portas.echo, portas.trigger)
-    # srf04.setup()
-      while (True):
-    #   distancia_cm = srf04.distance_in_cm()
-    #   distancia_in = srf04.distance_in_inches()
-        distancia_cm = round(random.uniform(5, 10),2)
-        distancia_in = round(random.uniform(5, 10),2)
-        gravar_dados_sensor(sensor_id, distancia_cm, "cm", "Distância", datetime.datetime.now())
-        gravar_dados_sensor(sensor_id, distancia_in, "in", "Distância", datetime.datetime.now())
-    #finally:
-    # print 'Fim'  
-    # RPi.GPIO.cleanup()  
+  conn=sqlite3.connect(dbname)
+  curs=conn.cursor()
+  curs.execute("SELECT time(data) as data,valor FROM log WHERE id_sensor = (?) LIMIT 10",(sensor_id,))
 
-# store the temperature in the database
-def gravar_dados_sensor(values=()):
-    conn=sqlite3.connect(dbname)
-    cur=conn.cursor()
-    query = 'INSERT INTO log (id_sensor, valor, unidade, variavel, data) VALUES (%s)' % (
-        ', '.join(['?'] * len(values))
-    )
-    cur.execute(query, values)
-    conn.commit()
-    id = cur.lastrowid
-    cur.close()
-    conn.close()
-    return id
+  rows=curs.fetchall() 
+  return rows  
 
+# display all contents of the table SENSOR
+def db_get_sensores():
+  conn=sqlite3.connect(dbname)
+  curs=conn.cursor()
+  curs.execute("SELECT id FROM SENSOR")
+
+  rows=curs.fetchall() 
+
+  ar=[r[0] for r in rows]
+  return ar  
+
+# display all contents of the table SENSOR
+def db_get_sensor_type(sensor_id):
+  conn=sqlite3.connect(dbname)
+  curs=conn.cursor()
+  curs.execute("SELECT tipo_sensor FROM SENSOR WHERE id = (?) ",(sensor_id,))
+
+  rows=curs.fetchall() 
+  ar=[r[0] for r in rows]
+  if (len(ar) > 0):
+    return  ar[0]
+  else:
+    return "" 
+
+
+def delete_data():
+  conn=sqlite3.connect(dbname)
+  curs=conn.cursor()
+  curs.execute("DELETE FROM log;")
+  curs.close()
+  conn.commit()
+  conn.close()
+  return True  
+
+# display the contents of the database
+def createLog():
+  # conectando...
+  conn = sqlite3.connect(dbname)
+  # definindo um cursor
+  cursor = conn.cursor()
+
+  # criando a tabela (schema)
+  cursor.execute("""
+  CREATE TABLE log (
+          id         INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          id_sensor      VARCHAR(20),
+          valor        DECIMAL(10,3),
+          unidade        VARCHAR(20),
+          variavel     VARCHAR(20),
+          data       TIMESTAMP
+  );
+  """)
+  # desconectando...
+  conn.close()
+
+# display the contents of the database
+def createSensor():
+  # conectando...
+  conn = sqlite3.connect(dbname)
+  # definindo um cursor
+  cursor = conn.cursor()
+
+  # criando a tabela (schema)
+  cursor.execute("""
+  CREATE TABLE SENSOR (
+          id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          tipo_sensor VARCHAR(20)
+  );
+  """)  
+  # desconectando...
+  conn.close()
 
 if __name__ == "__main__":
   app.run(debug = True, host='0.0.0.0', port=8080, passthrough_errors=True)
