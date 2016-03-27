@@ -2,7 +2,7 @@
 # coding: utf-8
 from decorators import async
 #from concretefactory.ultrasonicSensorFactory import UltrasonicSensorFactory
-import datetime
+import time, datetime, random, sqlite3
 #import RPi.GPIO
 
 #Arquivo de banco de dados do SQLite
@@ -21,6 +21,7 @@ def create_async_sensor(sensor_id, tipo, portas):
     #   distancia_in = srf04.distance_in_inches()
         distancia_cm = round(random.uniform(5, 10),2)
         gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
+        time.sleep(5)
     #finally:
     # print 'Fim'  
     # RPi.GPIO.cleanup()  

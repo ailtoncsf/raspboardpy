@@ -84,7 +84,7 @@ def listAll():
 def getChart():
   sensor_id = request.args.get('sensor_id')
   sensor_type = db_get_sensor_type(sensor_id)
-  variavel = ast.literal_eval(sensor_type_list[ast.literal_eval(sensor_type)]["variavel"])
+  variavel = sensor_type_list[sensor_type]["variavel"]
   unidade = sensor_type_list[sensor_type]["unidade"]
 
   dados = display_data(sensor_id);
@@ -97,7 +97,7 @@ def getChart():
 
   chartJson = {"chart": {"type": "line", "height": "400"},\
   "title":{"text": "Sensor " + sensor_id + "(" + sensor_type + ")", "x": -20},\
-  "subtitle":{"text": "Medindo distancia", "x": -20},\
+  "subtitle":{"text": "Medindo " + variavel, "x": -20},\
   "xAxis":{"categories": ast.literal_eval(json.dumps(datetimes))},\
   "yAxis":{"title": {"text": variavel + " (" + unidade+ ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
   "tooltip":{"tooltip":{"valueSuffix":  unidade}},\
@@ -125,7 +125,7 @@ def display_data(sensor_id):
 
   conn=sqlite3.connect(dbname)
   curs=conn.cursor()
-  curs.execute("SELECT time(data) as data,valor FROM log WHERE id_sensor = (?) LIMIT 10",(sensor_id,))
+  curs.execute("SELECT time(data) as data, valor FROM log WHERE id_sensor = (?) LIMIT 10",(sensor_id,))
 
   rows=curs.fetchall() 
   return rows  
@@ -152,7 +152,7 @@ def db_get_sensor_type(sensor_id):
   if (len(ar) > 0):
     return  ar[0]
   else:
-    return "" 
+    return None
 
 
 def delete_data():
