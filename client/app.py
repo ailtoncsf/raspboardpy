@@ -2,10 +2,14 @@
 # -*- coding: utf-8 -*-
 import random,datetime
 from time import gmtime, strftime
-from flask import Flask,json, render_template,request
+from flask import Flask,json, render_template, request
+from concretefactory.ultrasonicSensorFactory import UltrasonicSensorFactory
+#import RPi.GPIO
 
 app = Flask(__name__)
 
+#Arquivo de banco de dados do SQLite
+dbname='sensores.db'
 
 sensor_type_list = [\
 {'id':1, 'nome': 'sr04','variavel':'Distância','unidade':'cm',\
@@ -48,12 +52,16 @@ def getTipos():
 
 @app.route('/api/sensor/start')
 def startSensor():
+
   tipo = request.args.get('tipo')
   portas = request.args.get('portas')
-  #salvar no banco e retornar o id
-  #inicia uma thread lendo o sensor de Junior
-  #executar(tipo,portas); -> guardar na variavel global para futura recuperacao. #id, thread
-  return json.dumps(99999)
+  id_sensor = db_insert_sensor((tipo,))
+  create_async_sensor(tipo, {"echo": 23, "trigger":24})
+
+    #salvar no banco e retornar o id
+    #inicia uma thread lendo o sensor de Junior
+    #executar(tipo,portas); -> guardar na variavel global para futura recuperacao. #id, thread
+  return json.dumps(id_sensor)
 
 @app.route('/api/sensor/stop')
 def stopSensor():
@@ -81,6 +89,52 @@ def getChart():
       defaultJson["xAxis"]["categories"].pop(0)
   return json.dumps(defaultJson)
 
+# store the temperature in the database
+def db_insert_sensor(values=()):
+    conn=sqlite3.connect(dbname)
+    cur=conn.cursor()
+    query = 'INSERT INTO sensor (tipo_sensor) VALUES (%s)' % (
+        ', '.join(['?'] * len(values))
+    )
+    cur.execute(query, values)
+    conn.commit()
+    id = cur.lastrowid
+    cur.close()
+    conn.close()
+    return id     
+
+@async
+def create_async_sensor(sensor_id, tipo, portas):
+
+  if(tipo == "sr04"):
+    #try:
+    # srf04 = UltrasonicSensorFactory.createSensor("SRF04")
+    # srf04.changeSetup(portas.echo, portas.trigger)
+    # srf04.setup()
+      while (True):
+    #   distancia_cm = srf04.distance_in_cm()
+    #   distancia_in = srf04.distance_in_inches()
+        distancia_cm = round(random.uniform(5, 10),2)
+        distancia_in = round(random.uniform(5, 10),2)
+        gravar_dados_sensor(sensor_id, distancia_cm, "cm", "Distância", datetime.datetime.now())
+        gravar_dados_sensor(sensor_id, distancia_in, "in", "Distância", datetime.datetime.now())
+    #finally:
+    # print 'Fim'  
+    # RPi.GPIO.cleanup()  
+
+# store the temperature in the database
+def gravar_dados_sensor(values=()):
+    conn=sqlite3.connect(dbname)
+    cur=conn.cursor()
+    query = 'INSERT INTO log (id_sensor, valor, unidade, variavel, data) VALUES (%s)' % (
+        ', '.join(['?'] * len(values))
+    )
+    cur.execute(query, values)
+    conn.commit()
+    id = cur.lastrowid
+    cur.close()
+    conn.close()
+    return id
 
 
 if __name__ == "__main__":

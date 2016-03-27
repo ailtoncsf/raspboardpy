@@ -65,16 +65,13 @@
             </div>
           </div>
           <div class="form-group col-sm-8">
-             <div class="col-sm-4" ng-repeat="(k, value) in sensores" >
+             <div class="col-sm-6" ng-repeat="(k, value) in sensores" >
                 <label >Sensor #{[{k}]}</label>
                 <chart value="value"></chart>
-                
-              <button type="button" class="btn btn-xs btn-danger"
-                ng-click="stop(k)">
-                <i class="glyphicon glyphicon-stop"></i> Parar
-              </button>
+                <div type="button" class="btn btn-xs btn-danger" ng-click="stop(k)">
+                  <i class="glyphicon glyphicon-stop"></i> Parar
+                </div>
             </div> 
-            
           </div>
         </div>
       </div>
