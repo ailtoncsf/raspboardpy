@@ -15,11 +15,11 @@ dbname='sensores.sqlite'
 #@async
 @run_thread
 def create_async_sensor(sensor_id, tipo, portas):
-	try:
+	# try:
 		if(tipo == "sr04"):
 			try:
 				srf04 = UltrasonicSensorFactory.createSensor("SRF04")
-				srf04.changeSetup(portas.echo, portas.trigger)
+				srf04.changeSetup(int(portas["echo"]), int(portas["trigger"]))
 				srf04.setup()
 				while (True):
 					distancia_cm = srf04.distance_in_cm()
@@ -32,7 +32,7 @@ def create_async_sensor(sensor_id, tipo, portas):
 		if(tipo == "sr05"):
 				try:
 					srf05 = UltrasonicSensorFactory.createSensor("SRF05")
-					srf05.changeSetup(portas.echo, portas.trigger)
+					srf05.changeSetup(int(portas["echo"]), int(portas["trigger"]))
 				 	srf05.setup()
 					while (True):
 						distancia_cm = srf04.distance_in_cm()
@@ -45,7 +45,7 @@ def create_async_sensor(sensor_id, tipo, portas):
 		if(tipo == "pir"):
 				try:
 					pir = MotionSensorFactory.createSensor("PIR")
-					pir.changeSetup(portas.data)
+					pir.changeSetup(int(portas["data"]))
 				 	pir.setup()
 					while (True):
 						moviment = pir.isMotionDetected()
@@ -58,10 +58,10 @@ def create_async_sensor(sensor_id, tipo, portas):
 		if(tipo == "dht11"):
 				try:
 					dht11_H = HumiditySensorFactory.createSensor("DHT11Humididty")
-					dht11.changeSetup(portas.data)
+					dht11.changeSetup(int(portas["data"]))
 					dht11.setup()
 					dht11_T = TemperaturySensorFactory.createSensor("DHT11Temperature")
-					dht11_T.changeSetup(portas.data)
+					dht11_T.changeSetup(int(portas["data"]))
 					dht11_T.setup() 
 					while (True):      
 						temperature = dht11_T.getTemperature()
@@ -72,10 +72,11 @@ def create_async_sensor(sensor_id, tipo, portas):
 				finally:
 					print 'Fim'  
 				 	RPi.GPIO.cleanup()  
-	except (KeyboardInterrupt, SystemExit):
-		raise
-	except: 
-		print "Matando thread"
+	# except (KeyboardInterrupt, SystemExit):
+	# 	raise 
+	# except Exception, e:
+ #    print e.getMessage() 
+	# 	print "Matando thread"
 
 # store the temperature in the database
 def gravar_dados_sensor(values=()):

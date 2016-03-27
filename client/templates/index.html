@@ -49,13 +49,23 @@
                    <div > <!-- ng-if="tipo.checked" -->
                       <form class="form">
                             <div class="form-group">
-                            <div ng-repeat="porta in tipos[key].portas" >
-                              <label > {[{porta.nome}]}:</label>
-                              <input type="text" class="form-control input-sm" ng-model="porta.valor" 
-                              placeholder="{[{porta.valor}]}">
-                            </div>
+                                <div ng-if="tipos[key].data">
+                                <label > Data:</label>
+                                <input type="text" class="form-control input-sm" ng-model="tipos[key].data" 
+                                placeholder="{[{tipos[key].data}]}">
+                                </div>
+                                <div ng-if="tipos[key].echo">
+                                <label > Echo:</label>
+                                <input type="text" class="form-control input-sm" ng-model="tipos[key].echo" 
+                                placeholder="{[{tipos[key].echo}]}">
+                                </div>
+                                <div ng-if="tipos[key].trigger">
+                                <label > Trigger:</label>
+                                <input type="text" class="form-control input-sm" ng-model="tipos[key].trigger" 
+                                placeholder="{[{tipos[key].trigger}]}">
+                                </div>
                           </div>
-                            <div ng-click="addSensor(key,tipo.portas)" style="float:right;" class="btn btn-primary btn-xs">
+                            <div ng-click="addSensor(key,tipos[key])" style="float:right;" class="btn btn-primary btn-xs">
                             <i class="glyphicon glyphicon-plus"></i>
                             </div>
                       </form>

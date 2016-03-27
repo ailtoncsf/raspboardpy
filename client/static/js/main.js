@@ -20,9 +20,14 @@ angular.module('raspboardpyApp', []).config(function($interpolateProvider){
         })
     });
 
-    $scope.addSensor = function(tipo,portas){
-      
-     $http.get('/api/sensor/start?tipo='+tipo +'&data='+portas.data +'&echo='+portas.echo +'&trigger='+portas.trigger).
+    $scope.addSensor = function(key,value){
+    var _get ="?"
+        _get += key ? "tipo=" + key : "";
+        _get += value.data ? "&data=" +  value.data : "";
+        _get += value.echo ? "&echo=" +  value.echo : "";
+        _get += value.trigger ? "&trigger=" +  value.trigger : "";
+
+     $http.get('/api/sensor/start' + _get).
         success(function(sensor_id) {
           $scope.sensores[sensor_id] = {};
           $scope.getChartUpdated(sensor_id);
