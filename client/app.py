@@ -15,10 +15,10 @@ dbname='sensores.sqlite'
 threads_list = []
 
 sensor_type_list = {\
-'sr04': {'variavel':'Distância','unidade':'cm','portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
-'sr05': {'variavel':'Distância','unidade':'cm','portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
-'dht11':{'variavel':'Temperatura/Umidade','unidade':'Celsius, N/A','portas':[{'nome':'Data','valor':'23'}]},\
-'pir':  {'variavel':'Movimento','unidade':'N/A','portas':[{'nome':'Data','valor':'23'}]}}
+'sr04': {'variavel':'Distância','unidade':['cm'],'portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
+'sr05': {'variavel':'Distância','unidade':['cm'],'portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
+'dht11':{'variavel':'Temperatura/Umidade','unidade':['h','C'],'portas':[{'nome':'Data','valor':'23'}]},\
+'pir':  {'variavel':'Movimento','unidade':['n/a'],'portas':[{'nome':'Data','valor':'23'}]}}
 
 sensor_list = []
 
@@ -99,27 +99,27 @@ def getChart():
   primeiro_valor_medido = []
   segundo_valor_medido = []
 
-  for dado in dados:
-    datetimes.append(dado[0])
-    if sensor_type == "dht11":        
-      if dado[2] == "h": 
-        print "segundo valor" 
-        segundo_valor_medido.append(dado[1]) 
-      else:     
-        print "primeiro"
-        primeiro_valor_medido.append(dado[1])
-    else:
-      print "sesnro diferen dht11"
-      primeiro_valor_medido.append(dado[1])  
+  unidade1 = unidade[0]
+  
+  print "Unidade 1: " + unidade1
 
+  for dado in dados:
+    datetimes.append(dado[0])       
+    print "Unidade do banco " + dado[2]
+    if dado[2] == unidade1: 
+      print "primeiro"
+      primeiro_valor_medido.append(dado[1])
+    else:   
+      print "segundo valor" 
+      segundo_valor_medido.append(dado[1]) 
 
   if(sensor_type == "sr04"):
     chartJson = {"chart": {"type": "line", "height": "400"},\
     "title":{"text": "Sensor " + sensor_id + "(" + sensor_type.upper() + ")", "x": -20},\
     "subtitle":{"text": "Medindo " + variavel, "x": -20},\
     "xAxis":{"categories": ast.literal_eval(json.dumps(datetimes))},\
-    "yAxis":{"title": {"text": variavel + " (" + unidade+ ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
-    "tooltip":{"tooltip":{"valueSuffix":  unidade}},\
+    "yAxis":{"title": {"text": variavel + " (" + unidade1 + ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
+    "tooltip":{"tooltip":{"valueSuffix":  unidade1}},\
     "legend":{"legend" : {"layout": 'vertical', "align": "right", "verticalAlign": "middle", "borderWidth": 0}},\
     "series":[{"name": variavel, "data": primeiro_valor_medido}]}
 
@@ -128,11 +128,20 @@ def getChart():
     "title":{"text": "Sensor " + sensor_id + "(" + sensor_type.upper() + ")", "x": -20},\
     "subtitle":{"text": "Medindo " + variavel, "x": -20},\
     "xAxis":{"categories": ast.literal_eval(json.dumps(datetimes))},\
-    "yAxis":{"title": {"text": variavel + " (" + unidade+ ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
-    "tooltip":{"tooltip":{"valueSuffix":  unidade}},\
+    "yAxis":{"title": {"text": variavel + " (" + unidade1 + ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
+    "tooltip":{"tooltip":{"valueSuffix":  unidade1}},\
     "legend":{"legend" : {"layout": 'vertical', "align": "right", "verticalAlign": "middle", "borderWidth": 0}},\
     "series":[{"name": variavel, "data": primeiro_valor_medido}]}
 
+  if(sensor_type == "pir"):
+   chartJson = {"chart": {"type": "bar", "height": "400"},\
+   "title":{"text": "Sensor " + sensor_id + "(" + sensor_type.upper() + ")", "x": -20},\
+   "subtitle":{"text": "Medindo " + variavel, "x": -20},\
+   "xAxis":{"categories": ast.literal_eval(json.dumps(datetimes))},\
+   "yAxis":{"title": {"text": variavel + " (" + unidade1 + ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
+   "tooltip":{"tooltip":{"valueSuffix":  unidade1 }},\
+   "legend":{"legend" : {"layout": 'vertical', "align": "right", "verticalAlign": "middle", "borderWidth": 0}},\
+   "series":[{"name": variavel, "data": valores}]}
 
   if(sensor_type == "dht11"):
     chartJson =  {"chart": {
@@ -192,7 +201,7 @@ def getChart():
             "name": 'Humidade',
             "type": 'column',
             "yAxis": 1,
-            "data": segundo_valor_medido,
+            "data": primeiro_valor_medido,
             "tooltip": {
                 "valueSuffix": ' h'
             }
@@ -200,7 +209,7 @@ def getChart():
         }, {
             "name": 'Temperatura',
             "type": 'spline',
-            "data": primeiro_valor_medido,
+            "data": segundo_valor_medido,
             "tooltip": {
                 "valueSuffix": '°C'
             }
@@ -227,7 +236,7 @@ def display_data(sensor_id):
 
   conn=sqlite3.connect(dbname)
   curs=conn.cursor()
-  curs.execute("SELECT * FROM (SELECT time(data) AS data, valor, unidade FROM LOG WHERE id_sensor = (?) ORDER BY data DESC LIMIT 10) ORDER BY data ASC",(sensor_id,))
+  curs.execute("SELECT * FROM (SELECT time(data) AS data, valor, unidade FROM LOG WHERE id_sensor = (?) ORDER BY data DESC LIMIT 20) ORDER BY data ASC",(sensor_id,))
 
   rows=curs.fetchall() 
   return rows  
