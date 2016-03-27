@@ -10,7 +10,9 @@ from threads import create_async_sensor
 app = Flask(__name__)
 
 #Arquivo de banco de dados do SQLite
-dbname='sensores.db'
+dbname='sensores.sqlite'
+
+threads_list = []
 
 sensor_type_list = {\
 'sr04': {'variavel':'Distância','unidade':'cm','portas':[{'nome':'Echo','valor':'23'},{'nome':'Trigger','valor':'24'}]},\
@@ -61,7 +63,8 @@ def startSensor():
     #salvar no banco e retornar o id
   id_sensor = db_insert_sensor((tipo,))
     #inicia uma thread lendo o sensor de Junior
-  create_async_sensor(id_sensor,tipo, {"echo": 23, "trigger":24})
+  thread_async = create_async_sensor(id_sensor,tipo, {"echo": 23, "trigger":24})
+  threads_list.append(thread_async)
 
     #executar(tipo,portas); -> guardar na variavel global para futura recuperacao. #id, thread
   return json.dumps(id_sensor)
@@ -82,6 +85,9 @@ def listAll():
 
 @app.route('/api/sensor/chart')
 def getChart():
+  #for item in threads_list:
+  #  print 'Thread: ' + item.getName() +   'Ativa: ' + str(item.isAlive()) 
+
   sensor_id = request.args.get('sensor_id')
   sensor_type = db_get_sensor_type(sensor_id)
   variavel = sensor_type_list[sensor_type]["variavel"]
@@ -89,11 +95,23 @@ def getChart():
 
   dados = display_data(sensor_id);
   datetimes = []
-  valores = []
+
+  primeiro_valor_medido = []
+  segundo_valor_medido = []
 
   for dado in dados:
     datetimes.append(dado[0])
-    valores.append(dado[1])
+    if sensor_type == "dht11":        
+      if dado[2] == "h": 
+        print "segundo valor" 
+        segundo_valor_medido.append(dado[1]) 
+      else:     
+        print "primeiro"
+        primeiro_valor_medido.append(dado[1])
+    else:
+      print "sesnro diferen dht11"
+      primeiro_valor_medido.append(dado[1])  
+
 
   if(sensor_type == "sr04"):
     chartJson = {"chart": {"type": "line", "height": "400"},\
@@ -103,7 +121,7 @@ def getChart():
     "yAxis":{"title": {"text": variavel + " (" + unidade+ ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
     "tooltip":{"tooltip":{"valueSuffix":  unidade}},\
     "legend":{"legend" : {"layout": 'vertical', "align": "right", "verticalAlign": "middle", "borderWidth": 0}},\
-    "series":[{"name": variavel, "data": valores}]}
+    "series":[{"name": variavel, "data": primeiro_valor_medido}]}
 
   if(sensor_type == "sr05"):
     chartJson = {"chart": {"type": "line", "height": "400"},\
@@ -113,7 +131,7 @@ def getChart():
     "yAxis":{"title": {"text": variavel + " (" + unidade+ ")"}, "plotLines": [{"value": 0, "width": 1, "color": '#808080'}]},\
     "tooltip":{"tooltip":{"valueSuffix":  unidade}},\
     "legend":{"legend" : {"layout": 'vertical', "align": "right", "verticalAlign": "middle", "borderWidth": 0}},\
-    "series":[{"name": variavel, "data": valores}]}
+    "series":[{"name": variavel, "data": primeiro_valor_medido}]}
 
 
   if(sensor_type == "dht11"):
@@ -174,7 +192,7 @@ def getChart():
             "name": 'Humidade',
             "type": 'column',
             "yAxis": 1,
-            "data": valores,
+            "data": segundo_valor_medido,
             "tooltip": {
                 "valueSuffix": ' h'
             }
@@ -182,7 +200,7 @@ def getChart():
         }, {
             "name": 'Temperatura',
             "type": 'spline',
-            "data": valores,
+            "data": primeiro_valor_medido,
             "tooltip": {
                 "valueSuffix": '°C'
             }
@@ -209,7 +227,7 @@ def display_data(sensor_id):
 
   conn=sqlite3.connect(dbname)
   curs=conn.cursor()
-  curs.execute("SELECT time(data) as data, valor FROM log WHERE id_sensor = (?) LIMIT 10",(sensor_id,))
+  curs.execute("SELECT * FROM (SELECT time(data) AS data, valor, unidade FROM LOG WHERE id_sensor = (?) ORDER BY data DESC LIMIT 10) ORDER BY data ASC",(sensor_id,))
 
   rows=curs.fetchall() 
   return rows  
@@ -242,7 +260,7 @@ def db_get_sensor_type(sensor_id):
 def delete_data():
   conn=sqlite3.connect(dbname)
   curs=conn.cursor()
-  curs.execute("DELETE FROM log;")
+  curs.execute("DELETE FROM LOG;")
   curs.close()
   conn.commit()
   conn.close()
@@ -257,7 +275,7 @@ def createLog():
 
   # criando a tabela (schema)
   cursor.execute("""
-  CREATE TABLE log (
+  CREATE TABLE LOG (
           id         INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           id_sensor      VARCHAR(20),
           valor        DECIMAL(10,3),

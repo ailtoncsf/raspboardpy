@@ -113,7 +113,7 @@ def display_data(id_tipo_sensor):
 
 	conn=sqlite3.connect(dbname)
 	curs=conn.cursor()
-	curs.execute("SELECT id_sensor, valor, unidade, variavel, time(data) FROM log WHERE id_tipo_sensor = (?)",(id_tipo_sensor,))
+	curs.execute("SELECT id_sensor, valor, unidade, variavel, time(data) FROM log WHERE id_tipo_sensor = (?) ORDER BY data DESC LIMIT 10",(id_tipo_sensor,))
 
 	rows=curs.fetchall() 
 	return rows  
