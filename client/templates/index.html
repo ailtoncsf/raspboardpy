@@ -75,12 +75,13 @@
             </div>
           </div>
           <div class="form-group col-sm-10">
-             <div class="col-sm-6" ng-repeat="(k, value) in sensores" >
-                <label >Sensor #{[{k}]}</label>
-                <chart value="value"></chart>
-                <div type="button" class="btn btn-xs btn-danger" ng-click="stop(k)">
-                  <i class="glyphicon glyphicon-stop"></i> Parar
-                </div>
+             <div class="col-sm-6" ng-repeat="(id, value) in sensores" >
+                <label >Sensor #{[{id}]}</label>
+                <chart value="value.chart"></chart>
+                Atualizando em {[{value.maxinterval}]} s
+                <button class="btn btn-xs btn-danger" style="float:right;" ng-click="removeSensor(id)">
+                  <i class="glyphicon glyphicon-stop"></i> Remover
+                </button>
             </div> 
           </div>
         </div>
@@ -88,8 +89,8 @@
     </div>
   </div>
 
-
-    <script src="../static/lib/jquery.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+  <script src="../static/lib/jquery.min.js"></script>
     <script src="../static/lib/angular.min.js"></script>
     <script src="../static/lib/highcharts.js"></script>
     <script src="../static/js/main.js"></script>

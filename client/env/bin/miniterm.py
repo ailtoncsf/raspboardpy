@@ -1,4 +1,4 @@
-#!/tmp/raspboardpy/client/env/bin/python2.7
+#!/home/pi/raspboardpy/client/env/bin/python2.7
 #
 # Very simple serial terminal
 #

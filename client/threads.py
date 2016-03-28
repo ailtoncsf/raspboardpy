@@ -7,14 +7,19 @@ from concretefactory.humiditySensorFactory import HumididtySensorFactory
 from concretefactory.temperatureSensorFactory import TemperatureSensorFactory
 
 import time, datetime, random, sqlite3
-import RPi.GPIO
+import RPi.GPIO as GPIO 
 
 #Arquivo de banco de dados do SQLite
 dbname='sensores.sqlite'
 
+SLEEPTIME_DISTANCIA = 3
+SLEEPTIME_TEMPERATURA_UMIDADE = 5
+SLEEPTIME_MOVIMENTO = 2
+
 #@async
 @run_thread
-def create_async_sensor(sensor_id, tipo, portas):
+def create_async_sensor(condition,sensor_id, tipo, portas,getChart_CallbackEvent):
+
 	# try:
 		if(tipo == "sr04"):
 			try:
@@ -22,12 +27,18 @@ def create_async_sensor(sensor_id, tipo, portas):
 				srf04.changeSetup(int(portas["echo"]), int(portas["trigger"]))
 				srf04.setup()
 				while (True):
+					condition.acquire()
+					print "Capturando dados de distancia (SRF04 #"+str(sensor_id)+")"
 					distancia_cm = srf04.distance_in_cm()
 					gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
-					time.sleep(5)
+					getChart_CallbackEvent(sensor_id)
+					condition.notify()
+					condition.release()
+					time.sleep(SLEEPTIME_DISTANCIA)
 			finally:
+				condition.release()
 				print 'Fim'  
-				RPi.GPIO.cleanup() 
+				GPIO.cleanup() 
 		
 		if(tipo == "sr05"):
 				try:
@@ -35,12 +46,18 @@ def create_async_sensor(sensor_id, tipo, portas):
 					srf05.changeSetup(int(portas["echo"]), int(portas["trigger"]))
 				 	srf05.setup()
 					while (True):
+						condition.acquire()
+						print "Capturando dados de distancia (sr05 #"+str(sensor_id)+")"
 						distancia_cm = srf04.distance_in_cm()
 						gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
-						time.sleep(5)
+						getChart_CallbackEvent(sensor_id)
+						condition.notify()
+						condition.release()
+						time.sleep(SLEEPTIME_DISTANCIA)
 				finally:
+					condition.release()
 					print 'Fim'  
-					RPi.GPIO.cleanup()  
+					GPIO.cleanup()  
 
 		if(tipo == "pir"):
 				try:
@@ -48,12 +65,18 @@ def create_async_sensor(sensor_id, tipo, portas):
 					pir.changeSetup(int(portas["data"]))
 				 	pir.setup()
 					while (True):
+						condition.acquire()
+						print "Capturando dados de movimento (PIR #"+str(sensor_id)+")"
 						moviment = pir.isMotionDetected()
 						gravar_dados_sensor((sensor_id, moviment, "n/a", "Movimento", datetime.datetime.now()))
-						time.sleep(5)
+						getChart_CallbackEvent(sensor_id)
+						condition.notify()
+						condition.release()
+						time.sleep(SLEEPTIME_MOVIMENTO)
 				finally:
+					condition.release()
 					print 'Fim'  
-					RPi.GPIO.cleanup() 
+					GPIO.cleanup() 
 
 		if(tipo == "dht11"):
 				try:
@@ -63,15 +86,21 @@ def create_async_sensor(sensor_id, tipo, portas):
 					dht11_T = TemperaturySensorFactory.createSensor("DHT11Temperature")
 					dht11_T.changeSetup(int(portas["data"]))
 					dht11_T.setup() 
-					while (True):      
+					while (True):
+						condition.acquire()      
+						print "Capturando dados de umidade e temperatura (DHT11 #"+str(sensor_id)+")"
 						temperature = dht11_T.getTemperature()
 						gravar_dados_sensor((sensor_id, temperature, "C", "Temperatura", datetime.datetime.now()))
 						humidity = dht11_H.getHumidity()
-						gravar_dados_sensor((sensor_id, humidity, "%", "Humidade", datetime.datetime.now()))        
-						time.sleep(5)
+						gravar_dados_sensor((sensor_id, humidity, "%", "Humidade", datetime.datetime.now()))   
+						getChart_CallbackEvent(sensor_id)     
+						condition.notify()
+						condition.release()
+						time.sleep(SLEEPTIME_TEMPERATURA_UMIDADE)
 				finally:
+					condition.release()
 					print 'Fim'  
-				 	RPi.GPIO.cleanup()  
+				 	GPIO.cleanup()  
 	# except (KeyboardInterrupt, SystemExit):
 	# 	raise 
 	# except Exception, e:
