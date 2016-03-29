@@ -76,10 +76,10 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 
 		if(tipo == "dht11"):
 				try:
-					dht11_H = HumiditySensorFactory.createSensor("DHT11Humididty")
-					dht11.changeSetup(int(portas["data"]))
-					dht11.setup()
-					dht11_T = TemperaturySensorFactory.createSensor("DHT11Temperature")
+					dht11_H = HumididtySensorFactory.createSensor("DHT11Humididty")
+					dht11_H.changeSetup(int(portas["data"]))
+					dht11_H.setup()
+					dht11_T = TemperatureSensorFactory.createSensor("DHT11Temperature")
 					dht11_T.changeSetup(int(portas["data"]))
 					dht11_T.setup() 
 					while (True):
