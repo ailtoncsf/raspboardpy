@@ -5,11 +5,9 @@ from time import gmtime, strftime
 from flask import Flask,json, render_template, request
 from threads import create_async_sensor
 import threading
-from flask_socketio import SocketIO
 
 try:
 	app = Flask(__name__)
-	socketio = SocketIO(app)
 
 	#Arquivo de banco de dados do SQLite
 	dbname='sensores.sqlite'
@@ -60,7 +58,7 @@ try:
 		sensor_id = db_insert_sensor((tipo,))
 
 		#inicia uma thread lendo o sensor de Junior
-		thread_async = create_async_sensor(condition,sensor_id,tipo, {"data":data, "echo":echo, "trigger":trigger},getChart_CallbackEvent)
+		thread_async = create_async_sensor(condition,sensor_id,tipo, {"data":data, "echo":echo, "trigger":trigger})
 
 		#executar(tipo,portas); -> guardar na variavel global para futura recuperacao. #id, thread
 		threads_list[sensor_id] = thread_async
@@ -91,8 +89,8 @@ try:
 		return getChart(sensor_id)
 
 		#Utilizado pelo socketio
-	def getChart_CallbackEvent(sensor_id):
-		socketio.emit('response_api_sensor_chart', getChart(str(sensor_id)))
+	#def getChart_CallbackEvent(sensor_id):
+		#socketio.emit('response_api_sensor_chart', getChart(str(sensor_id)))
 
 	def getChart(sensor_id):
 		#for item in threads_list:
@@ -356,7 +354,7 @@ try:
 		condition.release()
 
 	if __name__ == "__main__":
-		socketio.run(app,host='0.0.0.0', port=8080,debug = True)
+		app.run(host='0.0.0.0', port=8080,debug = True)
 except IOError as e:
 	print e
 	if e.errno == errno.EPIPE:

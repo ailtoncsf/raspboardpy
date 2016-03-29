@@ -10,19 +10,7 @@ angular.module('raspboardpyApp', []).config(function($interpolateProvider){
   //do banco
     var MAX_INTERVAL = 3000; //3 segundos
     $scope.sensores= {};
-   /***************** TESTANDO SOCKETS ***********************/ 
-  var socket = io.connect('http://' + document.domain + ':' + location.port);
-    socket.on('connect', function() {
-        socket.emit('my event', {data: 'I\'m connected!'});
-    });
 
-   socket.on('response_api_sensor_chart', function(chart){
-             console.log("Grafico vindo por callback:" + chart)
-             /*$scope.sensores[sensor_id].chart = chart;
-             $scope.sensores[sensor_id].maxinterval = MAX_INTERVAL/1000; 
-             $scope.sensores[sensor_id].interval = "";*/
-   });
-  /***************** TESTANDO SOCKETS ***********************/
     function configSensor(list){
        list.forEach(function(sensor_id){
           $scope.sensores[sensor_id] = {chart:"",interval:null, maxinterval:MAX_INTERVAL/1000};

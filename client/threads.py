@@ -18,8 +18,7 @@ SLEEPTIME_MOVIMENTO = 2
 
 #@async
 @run_thread
-def create_async_sensor(condition,sensor_id, tipo, portas,getChart_CallbackEvent):
-
+def create_async_sensor(condition,sensor_id, tipo, portas):
 	# try:
 		if(tipo == "sr04"):
 			try:
@@ -29,9 +28,8 @@ def create_async_sensor(condition,sensor_id, tipo, portas,getChart_CallbackEvent
 				while (True):
 					condition.acquire()
 					print "Capturando dados de distancia (SRF04 #"+str(sensor_id)+")"
-					distancia_cm = srf04.distance_in_cm()
+					distancia_cm = round(srf04.distance_in_cm(),2)
 					gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
-					getChart_CallbackEvent(sensor_id)
 					condition.notify()
 					condition.release()
 					time.sleep(SLEEPTIME_DISTANCIA)
@@ -48,9 +46,8 @@ def create_async_sensor(condition,sensor_id, tipo, portas,getChart_CallbackEvent
 					while (True):
 						condition.acquire()
 						print "Capturando dados de distancia (sr05 #"+str(sensor_id)+")"
-						distancia_cm = srf04.distance_in_cm()
+						distancia_cm = round(srf04.distance_in_cm(),2)
 						gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
-						getChart_CallbackEvent(sensor_id)
 						condition.notify()
 						condition.release()
 						time.sleep(SLEEPTIME_DISTANCIA)
@@ -69,7 +66,6 @@ def create_async_sensor(condition,sensor_id, tipo, portas,getChart_CallbackEvent
 						print "Capturando dados de movimento (PIR #"+str(sensor_id)+")"
 						moviment = pir.isMotionDetected()
 						gravar_dados_sensor((sensor_id, moviment, "n/a", "Movimento", datetime.datetime.now()))
-						getChart_CallbackEvent(sensor_id)
 						condition.notify()
 						condition.release()
 						time.sleep(SLEEPTIME_MOVIMENTO)
@@ -93,7 +89,6 @@ def create_async_sensor(condition,sensor_id, tipo, portas,getChart_CallbackEvent
 						gravar_dados_sensor((sensor_id, temperature, "C", "Temperatura", datetime.datetime.now()))
 						humidity = dht11_H.getHumidity()
 						gravar_dados_sensor((sensor_id, humidity, "%", "Humidade", datetime.datetime.now()))   
-						getChart_CallbackEvent(sensor_id)     
 						condition.notify()
 						condition.release()
 						time.sleep(SLEEPTIME_TEMPERATURA_UMIDADE)
