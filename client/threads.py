@@ -18,7 +18,11 @@ SLEEPTIME_MOVIMENTO = 2
 
 #@async
 @run_thread
-def create_async_sensor(condition,sensor_id, tipo, portas):
+def create_async_sensor(condition,sensor_id, tipo, portas,db_get_sensor_type):
+	
+	#if (db_get_sensor_type(sensor_id) == None):
+	#	this.exit();
+	
 	# try:
 		if(tipo == "sr04"):
 			try:
@@ -26,6 +30,9 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 				srf04.changeSetup(int(portas["echo"]), int(portas["trigger"]))
 				srf04.setup()
 				while (True):
+					if (db_get_sensor_type(sensor_id) == None):
+						exit()
+
 					condition.acquire()
 					print "Capturando dados de distancia (SRF04 #"+str(sensor_id)+"_e:"+portas["echo"]+",t:"+portas["trigger"]+")"
 					distancia_cm = round(srf04.distance_in_cm(),2)
@@ -34,7 +41,6 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 					condition.release()
 					time.sleep(SLEEPTIME_DISTANCIA)
 			finally:
-				condition.release()
 				print 'Fim'  
 				GPIO.cleanup() 
 		
@@ -44,6 +50,9 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 					srf05.changeSetup(int(portas["echo"]), int(portas["trigger"]))
 				 	srf05.setup()
 					while (True):
+						if (db_get_sensor_type(sensor_id) == None):
+							exit()
+
 						condition.acquire()
 						print "Capturando dados de distancia (sr05 #"+str(sensor_id)+"_e:"+portas["echo"]+",t:"+portas["trigger"]+")"
 						distancia_cm = round(srf04.distance_in_cm(),2)
@@ -52,7 +61,6 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 						condition.release()
 						time.sleep(SLEEPTIME_DISTANCIA)
 				finally:
-					condition.release()
 					print 'Fim'  
 					GPIO.cleanup()  
 
@@ -62,6 +70,9 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 					pir.changeSetup(int(portas["data"]))
 				 	pir.setup()
 					while (True):
+						if (db_get_sensor_type(sensor_id) == None):
+							exit()
+
 						condition.acquire()
 						print "Capturando dados de movimento (PIR #"+str(sensor_id)+"_d:"+portas["data"]+")"
 						moviment = pir.isMotionDetected()
@@ -70,7 +81,6 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 						condition.release()
 						time.sleep(SLEEPTIME_MOVIMENTO)
 				finally:
-					condition.release()
 					print 'Fim'  
 					GPIO.cleanup() 
 
@@ -83,6 +93,9 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 					dht11_T.changeSetup(int(portas["data"]))
 					dht11_T.setup() 
 					while (True):
+						if (db_get_sensor_type(sensor_id) == None):
+							exit()
+
 						condition.acquire()      
 						print "Capturando dados de umidade e temperatura (DHT11 #"+str(sensor_id)+"_d:"+portas["data"]+")"
 						temperature = dht11_T.getTemperature()
@@ -93,7 +106,6 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 						condition.release()
 						time.sleep(SLEEPTIME_TEMPERATURA_UMIDADE)
 				finally:
-					condition.release()
 					print 'Fim'  
 				 	GPIO.cleanup()  
 	# except (KeyboardInterrupt, SystemExit):

@@ -58,7 +58,7 @@ try:
 		sensor_id = db_insert_sensor((tipo,))
 
 		#inicia uma thread lendo o sensor de Junior
-		thread_async = create_async_sensor(condition,sensor_id,tipo, {"data":data, "echo":echo, "trigger":trigger})
+		thread_async = create_async_sensor(condition,sensor_id,tipo, {"data":data, "echo":echo, "trigger":trigger},db_get_sensor_type)
 
 		#executar(tipo,portas); -> guardar na variavel global para futura recuperacao. #id, thread
 		threads_list[sensor_id] = thread_async
