@@ -25,79 +25,91 @@ def create_async_sensor(condition,sensor_id, tipo, portas,db_get_sensor_type):
 	
 	# try:
 		if(tipo == "sr04"):
+			id = "("+tipo+" #"+str(sensor_id)+"_e:"+portas["echo"]+"_t:"+portas["trigger"] + ") "
 			try:
 				srf04 = UltrasonicSensorFactory.createSensor("SRF04")
 				srf04.changeSetup(int(portas["echo"]), int(portas["trigger"]))
-				srf04.setup()
 				while (True):
 					if (db_get_sensor_type(sensor_id) == None):
 						exit()
 
 					condition.acquire()
-					print "Capturando dados de distancia (SRF04 #"+str(sensor_id)+"_e:"+portas["echo"]+",t:"+portas["trigger"]+")"
+					srf04.setup()
+					print id + " Capturando dados de distancia "
 					distancia_cm = round(srf04.distance_in_cm(),2)
 					gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
 					condition.notify()
 					condition.release()
 					time.sleep(SLEEPTIME_DISTANCIA)
+			except Exception, e:
+				print e.getMessage() 
 			finally:
-				print 'Fim'  
+				print id + 'Fim '  
 				GPIO.cleanup() 
 		
 		if(tipo == "sr05"):
+				id = "("+tipo+" #"+str(sensor_id)+"_e:"+portas["echo"]+"_t:"+portas["trigger"] + ") "
 				try:
 					srf05 = UltrasonicSensorFactory.createSensor("SRF05")
 					srf05.changeSetup(int(portas["echo"]), int(portas["trigger"]))
-				 	srf05.setup()
 					while (True):
 						if (db_get_sensor_type(sensor_id) == None):
 							exit()
 
 						condition.acquire()
-						print "Capturando dados de distancia (sr05 #"+str(sensor_id)+"_e:"+portas["echo"]+",t:"+portas["trigger"]+")"
-						distancia_cm = round(srf04.distance_in_cm(),2)
+				 		srf05.setup()
+						print id + "Capturando dados de distancia "
+						distancia_cm = round(srf05.distance_in_cm(),2)
 						gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
 						condition.notify()
 						condition.release()
 						time.sleep(SLEEPTIME_DISTANCIA)
+				except Exception, e:
+					print e.getMessage() 
 				finally:
-					print 'Fim'  
+					print id + 'Fim '  
 					GPIO.cleanup()  
 
 		if(tipo == "pir"):
+				id = "("+tipo+" #"+str(sensor_id)+"_d:"+portas["data"]+") "
 				try:
 					pir = MotionSensorFactory.createSensor("PIR")
 					pir.changeSetup(int(portas["data"]))
-				 	pir.setup()
 					while (True):
 						if (db_get_sensor_type(sensor_id) == None):
 							exit()
 
 						condition.acquire()
-						print "Capturando dados de movimento (PIR #"+str(sensor_id)+"_d:"+portas["data"]+")"
+						pir.setup()
+						print id + "Capturando dados de movimento "
 						moviment = pir.isMotionDetected()
 						gravar_dados_sensor((sensor_id, moviment, "n/a", "Movimento", datetime.datetime.now()))
 						condition.notify()
 						condition.release()
 						time.sleep(SLEEPTIME_MOVIMENTO)
+				except Exception, e:
+					print e.getMessage() 
 				finally:
-					print 'Fim'  
+					print id + 'Fim '    
 					GPIO.cleanup() 
 
 		if(tipo == "dht11"):
+				id = "("+tipo+" #"+str(sensor_id)+"_d:"+portas["data"]+") "
 				try:
 					dht11_H = HumididtySensorFactory.createSensor("DHT11Humididty")
 					dht11_H.changeSetup(int(portas["data"]))
-					dht11_H.setup()
+			
 					dht11_T = TemperatureSensorFactory.createSensor("DHT11Temperature")
 					dht11_T.changeSetup(int(portas["data"]))
-					dht11_T.setup() 
+		
 					while (True):
 						if (db_get_sensor_type(sensor_id) == None):
 							exit()
 
 						condition.acquire()      
-						print "Capturando dados de umidade e temperatura (DHT11 #"+str(sensor_id)+"_d:"+portas["data"]+")"
+						dht11_H.setup()			
+						dht11_T.setup() 
+						print id + "Capturando dados de umidade e temperatura "
 						temperature = dht11_T.getTemperature()
 						gravar_dados_sensor((sensor_id, temperature, "C", "Temperatura", datetime.datetime.now()))
 						humidity = dht11_H.getHumidity()
@@ -105,8 +117,10 @@ def create_async_sensor(condition,sensor_id, tipo, portas,db_get_sensor_type):
 						condition.notify()
 						condition.release()
 						time.sleep(SLEEPTIME_TEMPERATURA_UMIDADE)
+				except Exception, e:
+					print e.getMessage() 
 				finally:
-					print 'Fim'  
+					print id + 'Fim '  
 				 	GPIO.cleanup()  
 	# except (KeyboardInterrupt, SystemExit):
 	# 	raise 
