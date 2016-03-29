@@ -27,7 +27,7 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 				srf04.setup()
 				while (True):
 					condition.acquire()
-					print "Capturando dados de distancia (SRF04 #"+str(sensor_id)+")"
+					print "Capturando dados de distancia (SRF04 #"+str(sensor_id)+"_e:"+portas["echo"]+",t:"+portas["trigger"]+")"
 					distancia_cm = round(srf04.distance_in_cm(),2)
 					gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
 					condition.notify()
@@ -45,7 +45,7 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 				 	srf05.setup()
 					while (True):
 						condition.acquire()
-						print "Capturando dados de distancia (sr05 #"+str(sensor_id)+")"
+						print "Capturando dados de distancia (sr05 #"+str(sensor_id)+"_e:"+portas["echo"]+",t:"+portas["trigger"]+")"
 						distancia_cm = round(srf04.distance_in_cm(),2)
 						gravar_dados_sensor((sensor_id, distancia_cm, "cm", "Distancia", datetime.datetime.now()))
 						condition.notify()
@@ -63,7 +63,7 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 				 	pir.setup()
 					while (True):
 						condition.acquire()
-						print "Capturando dados de movimento (PIR #"+str(sensor_id)+")"
+						print "Capturando dados de movimento (PIR #"+str(sensor_id)+"_d:"+portas["data"]+")"
 						moviment = pir.isMotionDetected()
 						gravar_dados_sensor((sensor_id, moviment, "n/a", "Movimento", datetime.datetime.now()))
 						condition.notify()
@@ -84,7 +84,7 @@ def create_async_sensor(condition,sensor_id, tipo, portas):
 					dht11_T.setup() 
 					while (True):
 						condition.acquire()      
-						print "Capturando dados de umidade e temperatura (DHT11 #"+str(sensor_id)+")"
+						print "Capturando dados de umidade e temperatura (DHT11 #"+str(sensor_id)+"_d:"+portas["data"]+")"
 						temperature = dht11_T.getTemperature()
 						gravar_dados_sensor((sensor_id, temperature, "C", "Temperatura", datetime.datetime.now()))
 						humidity = dht11_H.getHumidity()
