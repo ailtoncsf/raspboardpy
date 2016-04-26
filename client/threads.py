@@ -42,7 +42,7 @@ def create_async_sensor(condition,sensor_id, tipo, portas,db_get_sensor_type):
 					condition.release()
 					time.sleep(SLEEPTIME_DISTANCIA)
 			except Exception, e:
-				print e.getMessage() 
+				pass#print e.getMessage() 
 			finally:
 				print id + 'Fim '  
 				GPIO.cleanup() 
@@ -65,7 +65,7 @@ def create_async_sensor(condition,sensor_id, tipo, portas,db_get_sensor_type):
 						condition.release()
 						time.sleep(SLEEPTIME_DISTANCIA)
 				except Exception, e:
-					print e.getMessage() 
+					pass#print e.getMessage() 
 				finally:
 					print id + 'Fim '  
 					GPIO.cleanup()  
@@ -88,7 +88,7 @@ def create_async_sensor(condition,sensor_id, tipo, portas,db_get_sensor_type):
 						condition.release()
 						time.sleep(SLEEPTIME_MOVIMENTO)
 				except Exception, e:
-					print e.getMessage() 
+					pass#print e.getMessage() 
 				finally:
 					print id + 'Fim '    
 					GPIO.cleanup() 
@@ -118,7 +118,7 @@ def create_async_sensor(condition,sensor_id, tipo, portas,db_get_sensor_type):
 						condition.release()
 						time.sleep(SLEEPTIME_TEMPERATURA_UMIDADE)
 				except Exception, e:
-					print e.getMessage() 
+					pass#print e.getMessage() 
 				finally:
 					print id + 'Fim '  
 				 	GPIO.cleanup()  
